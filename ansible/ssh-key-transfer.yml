@@ -1,0 +1,8 @@
+- name: Transfer ssh-key from node1 to Authorized Keys other nodes.
+  become: true
+  hosts: host_group
+  vars: 
+    user: demo_user
+    inventory_host_group: "host_group"
+  roles:
+    - { role: acc-ssh-key-transfer }

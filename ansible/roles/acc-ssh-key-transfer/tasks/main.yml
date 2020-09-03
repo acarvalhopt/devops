@@ -1,0 +1,52 @@
+
+- name: "[SSH] - Create ssh folder"
+  file: 
+    path: "/home/{{ user }}/.ssh"
+    state: directory
+    owner: "{{ tsm_admin_user }}"
+    group: "{{ tsm_admin_user }}"
+    mode: 0750
+
+- name: "[SSH] - Generate SSH keys"
+  become: yes
+  become_user: "{{ user }}"
+  shell: ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+  args:
+    creates: ~/.ssh/id_rsa
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[SSH] - Slurp SSH Key"
+  become: true
+  become_user: "{{ user }}"
+  slurp:
+    src: ~/.ssh/id_rsa.pub
+  register: ssh_key_host
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- set_fact: "ssh_key={{ ssh_key_host['content'] | b64decode }}"
+  when: inventory_hostname == groups[inventory_host_group][0]
+  
+- name: "[SSH] - SSH slurped debug"
+  debug: 
+    msg: "{{ hostvars[groups[inventory_host_group][0]]['ssh_key']}}"
+
+- name: "[SSH] - Make sure path exist"
+  file:
+    path: "/home/{{ user }}/.ssh/"
+    state: directory
+  when: inventory_hostname != groups[inventory_host_group][0]
+
+- name: "[SSH] - Make sure file exist"
+  file:
+    path: "/home/{{ user }}/.ssh/authorized_keys"
+    state: touch
+  when: inventory_hostname != groups[inventory_host_group][0]
+
+- name: "[SSH] - Paste SSH key to {{ user }} in Authorized Keys on other nodes"
+  become: true
+  become_user: "{{ user }}"
+  lineinfile:
+    path: "~/.ssh/authorized_keys"
+    regexp: "^{{ hostvars[groups[inventory_host_group][0]]['ssh_key']}}"
+    line: "{{ hostvars[groups[inventory_host_group][0]]['ssh_key'] }}"
+  when: inventory_hostname != groups[inventory_host_group][0]
