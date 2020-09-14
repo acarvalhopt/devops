@@ -1,0 +1,19 @@
+---
+
+- include_tasks: common.yml
+
+- include_tasks: install.yml
+
+- include_tasks: config.yml
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- include_tasks: ssh.yml
+
+- include_tasks: ha.yml
+
+- include_tasks: deploy_ensemble.yml
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- include_tasks: drivers.yml
+
+- include_tasks: test.yml

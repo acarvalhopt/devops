@@ -1,0 +1,10 @@
+- name: Install and configure Tableau
+  become: true
+  hosts: cluster_tableau
+  vars: 
+    product_key: "<key>"
+    tableau_dns: "<dns>"
+    inventory_host_group: "cluster_tableau"
+    lb_ip_address: "<lb_ip_address>"
+  roles:
+    - { role: acc-tableau-linux-three-node-ha }

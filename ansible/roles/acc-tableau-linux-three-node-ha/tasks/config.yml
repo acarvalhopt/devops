@@ -1,0 +1,186 @@
+---
+- name: "[CONFIG] -  Get Tableau Server Manager executable"
+  shell: "ls {{ tsm_packages }} | grep customer"
+  register: tsm
+  changed_when: false
+
+- name: "[CONFIG] -  Set facts for Tableau Server Manager executable"
+  set_fact:
+    TSM_EXECUTABLE: "{{ tsm_packages }}/{{ item.stdout }}"
+  with_items:
+    - "{{ tsm }}"
+
+- name: "[CONFIG] -  Get Tableau tsm version path"
+  shell: "ls {{ tsm_packages }} | grep customer | cut -d . -f2-"
+  register: tsm_version_path
+  changed_when: false
+
+- name: "[CONFIG] -  Set facts for Tableau Server Manager executable"
+  set_fact:
+    TSM_VERSION: "{{ item.stdout }}"
+  with_items:
+    - "{{ tsm_version_path }}"
+
+- name: "[CONFIG] - Debug TSM_EXECUTABLE"
+  debug: 
+    msg: "{{ TSM_EXECUTABLE }}"
+
+- name: "[CONFIG] - Debug TSM_VERSION"
+  debug: 
+    msg: "{{ TSM_VERSION }}"
+
+- name: "[CONFIG] - Initialize TSM"
+  command: "sudo {{ tsm_packages }}/scripts.{{ TSM_VERSION }}/initialize-tsm --accepteula -f -a {{ tsm_admin_user }} --no_proxy=localhost,127.0.0.1,{{ groups[inventory_host_group][0] }},{{ tableau_dns }}"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  ignore_errors: true
+
+- name: "[CONFIG] - Check groups of user"
+  command: "id -Gn"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  register: user_group
+
+- name: "[CONFIG] - Debug - Check groups of user"
+  debug:
+    msg: "{{ user_group.stdout }}"
+
+- name: "[CONFIG] - Force groups on {{ tsm_admin_user }} "
+  become: true
+  user:
+    name: "{{ tsm_admin_user }}"
+    groups: ["{{ tsm_admin_group }}", tsmadmin, tableau, wheel]
+    append: yes
+  ignore_errors: true
+
+- name: "[CONFIG] - Check groups of user after forcing..."
+  command: "id -Gn"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  register: user_group
+
+- name: "[CONFIG] - Source tableau_server.sh"
+  lineinfile:
+    dest: /home/{{ tsm_admin_user }}/.bashrc
+    state: present
+    line: 'source /etc/profile.d/tableau_server.sh'
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+
+- name: "[CONFIG] - Check whether Identity store is set"
+  command: "{{ TSM_EXECUTABLE }}/tsm user-identity-store list -s https://{{ groups[inventory_host_group][0] }}:8850 --username {{ tsm_admin_user }} --password {{ tsm_admin_pass }}"
+  changed_when: false
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  register: tableau_list_identity_store
+
+- name: "[CONFIG] - Activate license"
+  command: "{{ TSM_EXECUTABLE }}/tsm licenses activate -k {{ product_key }} -s https://{{ groups[inventory_host_group][0] }}:8850 -u {{ tsm_admin_user }} -p {{ tsm_admin_pass }}"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  ignore_errors: true
+
+- name: "[CONFIG] - Debug License"
+  command: "{{ TSM_EXECUTABLE }}/tsm licenses list -s https://{{ groups[inventory_host_group][0] }}:8850 -u {{ tsm_admin_user }} -p {{ tsm_admin_pass }}"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+
+#Registration
+- name: "[CONFIG] - Copy registration Template"
+  become: true
+  template: src=registration.j2 dest="/tmp/registration.json"
+  args:
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  0644
+  register: registration_template
+
+- name: "[CONFIG] - register license"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm register --file /tmp/registration.json -s https://{{ groups[inventory_host_group][0] }}:8850 -u {{ tsm_admin_user }} -p {{ tsm_admin_pass }}"
+  when: registration_template is changed
+
+- name: Remove registration Template
+  file:
+    path: /tmp/registration.json
+    state: absent
+
+
+#Identity
+- name: "[CONFIG] - Copy identity Template"
+  become: true
+  template: src=identity.j2 dest="/tmp/identity.json"
+  args:
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  0644
+  when:
+    - tableau_list_identity_store.stdout_lines | length == 0
+
+- name: "[CONFIG] - import identity"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm settings import -f /tmp/identity.json -s https://{{ groups[inventory_host_group][0] }}:8850 -u {{ tsm_admin_user }} -p {{ tsm_admin_pass }}"
+  ignore_errors: true
+
+- name: "[CONFIG] - Remove identity Template"
+  file:
+    path: /tmp/identity.json
+    state: absent
+
+#Gateway
+- name: "[CONFIG] - Copy gateway Template"
+  become: true
+  template: src=gateway.j2 dest="/tmp/gateway.json"
+  args:
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  0644
+  register: gateway_template
+
+- name: "[CONFIG] - Import gateway"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm settings import -f /tmp/gateway.json -s https://{{ groups[inventory_host_group][0] }}:8850"
+  ignore_errors: true
+  when: registration_template is changed
+
+- name: "[CONFIG] - Remove gateway Template"
+  file:
+    path: /tmp/gateway.json
+    state: absent
+
+- name: "[CONFIG] - Apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[CONFIG] - Initialize tsm without server"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm initialize --start-server --request-timeout {{ default_request_timeout }} -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[CONFIG] - Add administrator account"
+  command: "{{ TSM_EXECUTABLE }}/tabcmd initialuser --username '{{ tableau_server_admin_user }}' --password '{{ tableau_server_admin_pass }}' --server http://{{ groups[inventory_host_group][0] }}"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+
+- name: "[CONFIG] - Copy certs"
+  copy:
+    src: templates/certs/
+    dest: /tmp/certs
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  '0644'
+
+- name: "[CONFIG] - Configure SSL"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm security external-ssl enable --cert-file {{ cert_crt }} --key-file {{ cert_key }} -s https://{{ groups[inventory_host_group][0] }}:8850"
+  ignore_errors: true
+
+- name: "[CONFIG] - Apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply --ignore-prompt -s https://{{ groups[inventory_host_group][0] }}:8850"

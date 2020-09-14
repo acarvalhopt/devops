@@ -1,0 +1,25 @@
+- name: "[DRIVER] - Create tableau driver folder"
+  file: 
+    path: "/opt/tableau/tableau_driver/jdbc"
+    state: directory
+    owner: "{{ tsm_admin_user }}"
+    group: "{{ tsm_admin_user }}"
+    mode: 0755
+
+- name: "[DRIVER] - Download ignite jdbc connector"
+  get_url:
+    url: "{{ ignite_url_download }}"
+    dest: /opt/tableau/tableau_driver/jdbc/ignite-core-{{ ignite_version }}.jar
+    mode: '0777'
+
+- name: "[DRIVER] - Download postgres jdbc connector"
+  get_url:
+    url: "{{ postgres_url_download }}"
+    dest: /tmp/tableau-postgresql-odbc-09.06.0500-1.x86_64.rpm
+    mode: '0777'
+
+- name: "[DRIVER] - Install postgresql-odbc-driver"
+  become: true
+  yum:
+    name: "/tmp/tableau-postgresql-odbc-09.06.0500-1.x86_64.rpm"
+

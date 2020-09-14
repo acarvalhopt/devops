@@ -1,0 +1,65 @@
+---
+
+- name: "[COMMON] - Create {{ tsm_admin_group }} group"
+  group:
+    name: "{{ tsm_admin_group }}"
+    state: present
+
+- name: "[COMMON] - Create {{ tsm_admin_user }} user"
+  user:
+    name: "{{ tsm_admin_user }}"
+    groups: ["{{ tsm_admin_group }}", wheel]
+    password: "{{ tsm_admin_pass | password_hash('sha512', tsm_admin_salt) }}"
+    state: present
+    create_home: yes
+
+- name: "[COMMON] - Create directory for temporary install files"
+  file:
+    path: "{{ temp_files_dir }}"
+    owner: "{{ tsm_admin_user }}"
+    group: "{{ tsm_admin_group }}"
+    mode: 0777
+    state: directory
+
+- name: "[COMMON] - Allow {{ tsm_admin_user }} group to have passwordless"
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    insertafter: '^# %wheel'
+    line: '%{{ tsm_admin_user }} ALL=(ALL)       NOPASSWD:/opt/tableau/tableau_server/packages/scripts*/initialize-tsm --accepteula'
+    validate: 'visudo -cf %s'
+
+- name: "[COMMON] - Allow wheel group to have passwordless"
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    insertafter: '^# %wheel'
+    line: '%wheel          ALL=(ALL)       NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: "[COMMON] - add  {{ tsm_admin_user }} to wheel group"
+  become: true
+  command: "usermod -aG wheel {{ tsm_admin_user }}" 
+
+- name: "[COMMON] - Install necessary packages"
+  become: true
+  yum:
+    name: "{{ item }}"
+    enablerepo: "base,epel"
+    state: latest
+  with_items:
+    - wget
+    - java-1.8.0-openjdk.x86_64
+    - python2-pip
+
+- name: "[COMMON] - install the package, force upgrade"
+  become: true
+  pip:
+    name: "{{ item }}"
+    state: present
+    extra_args: --upgrade
+  with_items:
+    - pexpect
+    - pip
+
+...

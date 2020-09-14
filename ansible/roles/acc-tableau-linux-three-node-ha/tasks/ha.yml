@@ -1,0 +1,64 @@
+
+- name: "[HA] - Check Zookeeper coordination Hosts"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm configuration get -k coordinationservice.hosts -s https://{{ groups[inventory_host_group][0] }}:8850"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Get Zookeeper port"
+  become: true
+  shell: "cat {{ zoo_cfg_file }} | grep clientPort | awk '{print $1}' | cut -d '=' -f 2"
+  register: zoo_client_port
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Debug zoo_client_port"
+  debug: 
+    msg: "{{ zoo_client_port.stdout }}"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Configure Zookeeper coordination Hosts"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm configuration set -k coordinationservice.hosts -v {{ groups[inventory_host_group][0] }}:{{ zoo_client_port.stdout }} -s https://{{ groups[inventory_host_group][0] }}:8850"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - list pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes list -s https://{{ groups[inventory_host_group][0] }}:8850"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply --ignore-prompt -s https://{{ groups[inventory_host_group][0] }}:8850"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - generate bootstrap"
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology nodes get-bootstrap-file --file /tmp/tableau_bootstrap.json"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Debug bootstrap"  
+  command: "cat /tmp/tableau_bootstrap.json"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Copy bootstrap to workers"  
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -rp /tmp/tableau_bootstrap.json {{ tsm_admin_user }}@{{ item }}:/tmp/tableau_bootstrap.json"
+  with_items:
+    - "{{ groups[inventory_host_group][1] }}"
+    - "{{ groups[inventory_host_group][2] }}"
+  when: inventory_hostname == groups[inventory_host_group][0]
+
+- name: "[HA] - Debug bootstrap on Worker Nodes"  
+  command: "cat /tmp/tableau_bootstrap.json"
+  when: inventory_hostname != groups[inventory_host_group][0]
+
+
+- name: "[HA] - Initialize TSM on node {{ inventory_hostname }}"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: sudo /opt/tableau/tableau_server/packages/scripts*/initialize-tsm -b /tmp/tableau_bootstrap.json --accepteula -f
+  when: inventory_hostname != groups[inventory_host_group][0]

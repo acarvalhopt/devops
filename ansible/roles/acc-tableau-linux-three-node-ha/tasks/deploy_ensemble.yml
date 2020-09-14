@@ -1,0 +1,111 @@
+- name: "[DEPLOY_ENSEMBLE] - Stop Tableau Server"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm stop -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_ENSEMBLE] - list pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes list -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_ENSEMBLE] - apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+##[OPTIONAL] - NOT WORKING BUT SUPPOSED TO WORK
+##
+## - name: "[DEPLOY_ENSEMBLE] - Get node ids"
+##   command: "{{ TSM_EXECUTABLE }}/tsm topology list-nodes -v -s https://{{ groups[inventory_host_group][0] }}:8850 | grep node | awk '{print $1}' "
+##   become: true
+##   become_user: "{{ tsm_admin_user }}"
+##   register: node_ids
+
+## - name: "[DEPLOY_ENSEMBLE] - Debug node_ids"
+##   debug: 
+##     msg: "{{ node_ids }}"
+
+## - set_fact: "nodes={{ node_ids.stdout | replace('\n', ',')}}"
+
+## - name: "[DEPLOY_ENSEMBLE] - Debug register nodes"
+##   debug: 
+##     msg: "{{ nodes }}"
+
+## - name: "[DEPLOY_ENSEMBLE] - clean old ensemble coordination-service"
+##   become_user: "{{ tsm_admin_user }}"
+##   command: "{{ TSM_EXECUTABLE }}/tsm topology cleanup-coordination-service --ignore-prompt"
+##   ignore_errors: true 
+
+## - name: "[DEPLOY_ENSEMBLE] - Deploy coordination-service"
+##   become_user: "{{ tsm_admin_user }}"
+##   command: "{{ TSM_EXECUTABLE }}/tsm topology deploy-coordination-service -n {{ nodes }} -s https://{{ groups[inventory_host_group][0] }}:8850 --ignore-prompt "
+##
+## [END OF OPTIONAL]
+
+- name: "[DEPLOY_NODE_2] - Get node2 id"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology list-nodes -v -s https://{{ groups[inventory_host_group][0] }}:8850 | grep {{ groups[inventory_host_group][1] }} | awk '{print $1}' "
+  register: node2_id
+
+- set_fact: "node2={{ node2_id.stdout }}"
+
+- name: "[DEPLOY_NODE_2] - Debug set fact node 2"
+  debug: 
+    msg: "{{ node2 }}"
+
+- name: "[DEPLOY_NODE_2] - Set clustercontroller"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node2 }} -pr clustercontroller -c 1 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_NODE_2] - Set backgrounder"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node2 }} -pr backgrounder -c 2 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_NODE_2] - Set gateway"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node2 }} -pr gateway -c 1 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_ENSEMBLE] - apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply -s https://{{ groups[inventory_host_group][0] }}:8850 --ignore-warnings"
+
+- name: "[DEPLOY_NODE_3] - Get node3 id"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology list-nodes -v -s https://{{ groups[inventory_host_group][0] }}:8850 | grep {{ groups[inventory_host_group][2] }} | awk '{print $1}' "
+  register: node3_id
+
+- set_fact: "node3={{ node3_id.stdout }}"
+
+- name: "[DEPLOY_NODE_3] - Debug set fact node 3"
+  debug: 
+    msg: "{{ node3 }}"
+
+- name: "[DEPLOY_NODE_3] - Set clustercontroller"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node3 }} -pr clustercontroller -c 1 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_NODE_3] - Set backgrounder"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node3 }} -pr backgrounder -c 2 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_NODE_3] - Set gateway"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm topology set-process -n {{ node3 }} -pr gateway -c 1 -s https://{{ groups[inventory_host_group][0] }}:8850"
+
+- name: "[DEPLOY_ENSEMBLE] - apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply -s https://{{ groups[inventory_host_group][0] }}:8850 --ignore-warnings"
+
+- name: "[DEPLOY_ENSEMBLE] - Start TSM"
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm start -s https://{{ groups[inventory_host_group][0] }}:8850"

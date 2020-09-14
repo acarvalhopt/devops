@@ -1,0 +1,3 @@
+- name: "[TEST] - Test the connection Admin Console"
+  shell: curl https://{{ ansible_default_ipv4.address }}:8850 -k -v
+  when: inventory_hostname == groups[inventory_host_group][0]

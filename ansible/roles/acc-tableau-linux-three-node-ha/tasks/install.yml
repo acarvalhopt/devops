@@ -1,0 +1,4 @@
+- name: Install Tableau Server
+  yum:
+      name: "{{ tableau_url_download }}"
+      state: present 
