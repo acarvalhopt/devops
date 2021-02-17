@@ -12,7 +12,7 @@ olcSyncRepl: rid=001
   provider=ldap://{{ inventory_hostname_short }} 
   bindmethod=simple
   binddn={{ binddn }}
-  credentials={{ credentials | b64decode }}
+  credentials={{ credentials }}
   searchbase={{ searchbase }}
   scope=sub
   schemachecking=on
@@ -25,7 +25,7 @@ olcSyncRepl: rid=002
   bindmethod=simple
   {% endif %}{% endfor %}
   binddn={{ binddn }}
-  credentials={{ credentials | b64decode }}
+  credentials={{ credentials }}
   searchbase={{ searchbase }}
   scope=sub
   schemachecking=on
