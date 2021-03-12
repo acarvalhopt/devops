@@ -59,6 +59,7 @@ Instructions:
 
 
 # CentOS 7 Manual installation
+```bash
 yum install git
 yum install python-pip
 python3 -m pip install -U pip
@@ -67,3 +68,4 @@ pip3 install -Iv keyring==13.2.1
 pip3 install -Iv GitPython==2.1.11
 pip3 install -Iv gitdb2==3.0.1
 pip3 install keyrings.alt
+```
