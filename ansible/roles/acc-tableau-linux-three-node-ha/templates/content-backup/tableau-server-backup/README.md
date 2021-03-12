@@ -1,5 +1,7 @@
 # This folder is a backup from the scripts in REPO "tableau-content".
 
+Source: https://gitlab.com/brilliant-data/tableau-server-backup
+
 ### tableau-server-backup
 
 This is a script for backing up tableau server workbooks and datasources to a git repository
