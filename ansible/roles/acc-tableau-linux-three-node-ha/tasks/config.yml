@@ -156,6 +156,50 @@
   become_user: "{{ tsm_admin_user }}"
   command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply -s https://{{ groups[inventory_host_group][0] }}:8850"
 
+#SMTP
+- name: "[CONFIG] - Copy smtp Template"
+  become: true
+  template: src=smtp.j2 dest="/tmp/smtp.json"
+  args:
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  0644
+  register: smtp_template
+
+- name: "[CONFIG] - Import smtp"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm settings import -f /tmp/smtp.json -s https://{{ groups[inventory_host_group][0] }}:8850"
+  ignore_errors: true
+
+#Notifications
+- name: "[CONFIG] - Copy smtp Template"
+  become: true
+  template: src=notifications.j2 dest="/tmp/notifications.json"
+  args:
+    owner: "{{ tsm_admin_user }}"
+    group: "wheel"
+    mode:  0644
+  register: notifications_template
+
+- name: "[CONFIG] - Import notifications"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm settings import -f /tmp/notifications.json -s https://{{ groups[inventory_host_group][0] }}:8850"
+  ignore_errors: true
+
+#configure access to internal postgres for audit purposes
+- name: "[CONFIG] - Configure internal postgres"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm data-access repository-access enable --repository-username {{ tableau_internal_pg_user }} --repository-password {{ tableau_internal_pg_password }} -s https://{{ groups[inventory_host_group][0] }}:8850"
+  ignore_errors: true
+
+- name: "[CONFIG] - Apply pending changes"
+  become: true
+  become_user: "{{ tsm_admin_user }}"
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply --ignore-prompt -s https://{{ groups[inventory_host_group][0] }}:8850"
+
 - name: "[CONFIG] - Initialize tsm without server"
   become: true
   become_user: "{{ tsm_admin_user }}"
