@@ -1,7 +1,7 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-#pip install watchdog to work.
+#pip3 install watchdog to work.
 
 import os
 import json
