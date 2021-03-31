@@ -41,26 +41,26 @@ def organize(dstFolder,filename):
 #remove RootFolders
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        saved = False
+        
         for filename in os.listdir(folder_to_track):
+            saved = False
             #save screenshots in a different directory.
-            if filename.startswith('Captura'): 
-                organize("printscreen",filename)
-                saved = True
-            else:
-                for key,value in dictRootFolders.items():
-                    for item in value:
-                        if filename.endswith(item):
-                            organize(key,filename)
-                            saved = True
+            for key,value in dictRootFolders.items():
+                for item in value:
+                    if filename.startswith(dictRootFolders['printscreen'][0]) and not saved: 
+                        organize("printscreen",filename)
+                        saved = True
+                    elif (filename.endswith(item.upper()) or filename.endswith(item.lower())) and not saved:
+                        organize(key,filename)
+                        saved = True
 
             # if it's not a screenshot, it's not in our dictionary and it's not a rootFolder should go to "others"
             if filename not in rootFolders and not saved:    
                 organize("others",filename)
 
 rootFolders = ['images','pdf','csv','printscreen','zip','videos','xml','sh','python','sql','properties','installers','yaml','others','txt','certs']
-dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif','.JPEG','.JPG','.PNG','.GIF'],
-                    'pdf':['.pdf','.PDF'],
+dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif'],
+                    'pdf':['.pdf'],
                     'office':['.csv','.xls','xlsx'],
                     'zip':['.zip','.tar.bz2','.tar.gz','.tgz','.rar'],
                     'videos':['.mp4'],
