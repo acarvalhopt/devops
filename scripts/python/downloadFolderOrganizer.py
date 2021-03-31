@@ -37,7 +37,6 @@ def organize(dstFolder,filename):
     moveFile(folder_to_track,new_destination,filename)
 
 #TODO:
-#change Captura to value of 'printscreen'
 #remove RootFolders
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
@@ -53,8 +52,12 @@ class MyHandler(FileSystemEventHandler):
                     elif (filename.endswith(item.upper()) or filename.endswith(item.lower())) and not saved:
                         organize(key,filename)
                         saved = True
+                    # elif filename not in key and not saved:    
+                    #     organize(key,filename)
+                    #     saved = True
 
             # if it's not a screenshot, it's not in our dictionary and it's not a rootFolder should go to "others"
+            #FIX THIS
             if filename not in rootFolders and not saved:    
                 organize("others",filename)
 
