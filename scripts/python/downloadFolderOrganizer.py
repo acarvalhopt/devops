@@ -59,7 +59,6 @@ class MyHandler(FileSystemEventHandler):
                 organize("others",filename)
 
 rootFolders = ['images','pdf','csv','printscreen','zip','videos','xml','sh','python','sql','properties','installers','yaml','others','txt','certs']
-
 dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif','.JPEG','.JPG','.PNG','.GIF'],
                     'pdf':['.pdf','.PDF'],
                     'office':['.csv','.xls','xlsx'],
