@@ -12,3 +12,4 @@ This script will organize Downloads folder automaticaly, it will be "watching" y
  - go to System Preferences -> Accounts -> Login items
  - add this app
  - test & done ;)
+
