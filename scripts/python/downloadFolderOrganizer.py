@@ -36,43 +36,27 @@ def organize(dstFolder,filename):
     print("Moving to:", new_destination)
     moveFile(folder_to_track,new_destination,filename)
 
+#TODO:
+#change Captura to value of 'printscreen'
+#remove RootFolders
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
+        saved = False
         for filename in os.listdir(folder_to_track):
-            if filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png') or filename.endswith('.gif') or filename.endswith('.JPG') or filename.endswith('.JPEG') or filename.endswith('.PNG') or filename.endswith('.GIF'):
-                if filename.startswith('Captura'):
-                    organize("printscreen",filename)
-                else:
-                    organize("images",filename)
-            elif filename.endswith('.pdf') or filename.endswith('.PDF'):
-                organize("pdf",filename)
-            elif filename.endswith('.csv') or filename.endswith('.xls') or filename.endswith('.xlsx'):
-                organize("csv",filename)
-            elif filename.endswith('.zip') or filename.endswith('.tar.bz2') or filename.endswith('.tar.gz') or filename.endswith('.tgz') or filename.endswith('.rar'):
-                organize("zip",filename)
-            elif filename.endswith('.mp4'):
-                organize("videos",filename)
-            elif filename.endswith('.xml'):
-                organize("xml",filename)
-            elif filename.endswith('.sh'):
-                organize("sh",filename)
-            elif filename.endswith('.py'):
-                organize("python",filename)
-            elif filename.endswith('.sql'):
-                organize("sql",filename)
-            elif filename.endswith('.properties') or filename.endswith('.conf'):
-                organize("properties",filename)
-            elif filename.endswith('.dmg') or filename.endswith('.pkg'):
-                organize("installers",filename)
-            elif filename.endswith('.yaml') or filename.endswith('.yml'):
-                organize("yaml",filename)
-            elif filename.endswith('.rtf') or filename.endswith('.txt'):
-                organize("txt",filename)
-            elif filename.endswith('.crt') or filename.endswith('.pub') or filename.endswith('.pem') or filename.endswith('.key'):
-                organize("certs",filename)
+            #save screenshots in a different directory.
+            if filename.startswith('Captura'): 
+                organize("printscreen",filename)
+                saved = True
             else:
-                if filename not in rootFolders:    
-                    organize("others",filename)
+                for key,value in dictRootFolders.items():
+                    for item in value:
+                        if filename.endswith(item):
+                            organize(key,filename)
+                            saved = True
+
+            # if it's not a screenshot, it's not in our dictionary and it's not a rootFolder should go to "others"
+            if filename not in rootFolders and not saved:    
+                organize("others",filename)
 
 rootFolders = ['images','pdf','csv','printscreen','zip','videos','xml','sh','python','sql','properties','installers','yaml','others','txt','certs']
 
@@ -89,9 +73,10 @@ dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif','.JPEG','.JPG','.PNG'
                     'installers':['.dmg','.pkg'],
                     'yaml':['.yaml','.yml'],
                     'txt':['.rtf','.txt'],
-                    'certs':['.crt','.pub','.pem','.key']
+                    'certs':['.crt','.pub','.pem','.key'],
+                    'printscreen':['Captura'],
+                    'others':['otherExtensions']
                     }
-
 
 event_handler = MyHandler()
 observer = Observer()
