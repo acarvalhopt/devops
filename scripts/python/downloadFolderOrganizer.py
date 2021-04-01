@@ -7,9 +7,6 @@ import os
 import json
 import time
 
-folder_to_track = "/Users/andrecarvalho/Downloads"
-folder_destination = "/Users/andrecarvalho/Downloads"
-
 def createDstFolder(path):
     try:
         os.mkdir(path)
@@ -36,37 +33,34 @@ def organize(dstFolder,filename):
     print("Moving to:", new_destination)
     moveFile(folder_to_track,new_destination,filename)
 
-#TODO:
-#remove RootFolders
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
         
         for filename in os.listdir(folder_to_track):
             saved = False
-            #save screenshots in a different directory.
+            
             for key,value in dictRootFolders.items():
                 for item in value:
+                    #save screenshots in a different directory.
                     if filename.startswith(dictRootFolders['printscreen'][0]) and not saved: 
                         organize("printscreen",filename)
                         saved = True
                     elif (filename.endswith(item.upper()) or filename.endswith(item.lower())) and not saved:
                         organize(key,filename)
                         saved = True
-                    # elif filename not in key and not saved:    
-                    #     organize(key,filename)
-                    #     saved = True
-
-            # if it's not a screenshot, it's not in our dictionary and it's not a rootFolder should go to "others"
-            #FIX THIS
-            if filename not in rootFolders and not saved:    
+            #if not in our dictionarie of extensions save in "others" folder.     
+            if filename not in dictRootFolders.keys() and not saved:
                 organize("others",filename)
+                saved = True
 
-rootFolders = ['images','pdf','csv','printscreen','zip','videos','xml','sh','python','sql','properties','installers','yaml','others','txt','certs']
+
+folder_to_track = "/Users/andrecarvalho/Downloads"
+folder_destination = "/Users/andrecarvalho/Downloads"
 dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif'],
                     'pdf':['.pdf'],
-                    'office':['.csv','.xls','xlsx'],
+                    'office':['.csv','.xls','.xlsx'],
                     'zip':['.zip','.tar.bz2','.tar.gz','.tgz','.rar'],
-                    'videos':['.mp4'],
+                    'videos':['.mp4','.mov'],
                     'xml':['.xml'],
                     'sh':['.sh'],
                     'python':['.py'],
