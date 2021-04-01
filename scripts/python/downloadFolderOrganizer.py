@@ -7,31 +7,22 @@ import os
 import json
 import time
 
-def createDstFolder(path):
-    try:
-        os.mkdir(path)
-    except OSError:
-        print ("Creation of the directory %s failed" % path)
-    else:
-        print ("Successfully created the directory %s " % path)
 
-def moveFile(path,dst,filename):
-    print("files: ", filename)
-    src = path + "/" + filename
-    dst = dst + "/" + filename
-    try:
-        os.rename(src, dst)
-    except Exception:
-        print ("Move %s failed" % src)
-    else:
-        print ("Move Success %s " % src)
-
-def organize(dstFolder,filename):
+def organize(src, dstFolder,filename):
     new_destination = folder_destination + "/" + dstFolder
-    if not os.path.isdir(str(new_destination)):
-        createDstFolder(new_destination)
-    print("Moving to:", new_destination)
-    moveFile(folder_to_track,new_destination,filename)
+    try:
+        if not os.path.isdir(str(new_destination)):
+            print("[INFO] - Destination folder doesn't exist, creating: " + new_destination)
+            os.mkdir(new_destination)
+        print("[INFO] - Moving file " + filename + " to: ", new_destination)
+        src = src + "/" + filename
+        new_destination = new_destination + "/" + filename
+        os.rename(src, new_destination)
+
+    except OSError:
+        print ("[ERROR] - Failed to move file: " + filename)
+    else:
+        print ("[INFO] - Moved file: " + filename + " sucessfully!")
 
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
@@ -43,14 +34,14 @@ class MyHandler(FileSystemEventHandler):
                 for item in value:
                     #save screenshots in a different directory.
                     if filename.startswith(dictRootFolders['printscreen'][0]) and not saved: 
-                        organize("printscreen",filename)
+                        organize(folder_to_track,"printscreen",filename)
                         saved = True
                     elif (filename.endswith(item.upper()) or filename.endswith(item.lower())) and not saved:
-                        organize(key,filename)
+                        organize(folder_to_track,key,filename)
                         saved = True
             #if not in our dictionarie of extensions save in "others" folder.     
             if filename not in dictRootFolders.keys() and not saved:
-                organize("others",filename)
+                organize(folder_to_track,"others",filename)
                 saved = True
 
 
