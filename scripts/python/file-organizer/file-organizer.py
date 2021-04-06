@@ -24,7 +24,7 @@ def organize(src, dstFolder,filename):
     else:
         print ("[INFO] - Moved file: " + filename + " sucessfully!")
 
-class MyHandler(FileSystemEventHandler):
+class EventHandler(FileSystemEventHandler):
     def on_modified(self, event):
         
         for filename in os.listdir(folder_to_track):
@@ -44,35 +44,35 @@ class MyHandler(FileSystemEventHandler):
                 organize(folder_to_track,"others",filename)
                 saved = True
 
+if __name__ == "__main__":
+    folder_to_track = "/Users/andrecarvalho/Downloads"
+    folder_destination = "/Users/andrecarvalho/Downloads"
+    dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif'],
+                        'pdf':['.pdf'],
+                        'office':['.csv','.xls','.xlsx'],
+                        'zip':['.zip','.tar.bz2','.tar.gz','.tgz','.rar'],
+                        'videos':['.mp4','.mov'],
+                        'xml':['.xml'],
+                        'sh':['.sh'],
+                        'python':['.py'],
+                        'sql':['.sql'],
+                        'properties':['.conf','.properties'],
+                        'installers':['.dmg','.pkg'],
+                        'yaml':['.yaml','.yml'],
+                        'txt':['.rtf','.txt'],
+                        'certs':['.crt','.pub','.pem','.key'],
+                        'printscreen':['Captura'],
+                        'others':['otherExtensions']
+                        }
 
-folder_to_track = "/Users/andrecarvalho/Downloads"
-folder_destination = "/Users/andrecarvalho/Downloads"
-dictRootFolders = { 'images':['.jpeg','.jpg','.png','.gif'],
-                    'pdf':['.pdf'],
-                    'office':['.csv','.xls','.xlsx'],
-                    'zip':['.zip','.tar.bz2','.tar.gz','.tgz','.rar'],
-                    'videos':['.mp4','.mov'],
-                    'xml':['.xml'],
-                    'sh':['.sh'],
-                    'python':['.py'],
-                    'sql':['.sql'],
-                    'properties':['.conf','.properties'],
-                    'installers':['.dmg','.pkg'],
-                    'yaml':['.yaml','.yml'],
-                    'txt':['.rtf','.txt'],
-                    'certs':['.crt','.pub','.pem','.key'],
-                    'printscreen':['Captura'],
-                    'others':['otherExtensions']
-                    }
+    event_handler = EventHandler()
+    observer = Observer()
+    observer.schedule(event_handler,folder_to_track,recursive=True)
+    observer.start()
 
-event_handler = MyHandler()
-observer = Observer()
-observer.schedule(event_handler,folder_to_track,recursive=True)
-observer.start()
-
-try:
-    while True:
-        time.sleep(60)
-except KeyboardInterrupt:
-    observer.stop()
-observer.join()
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
