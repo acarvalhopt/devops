@@ -43,8 +43,6 @@ operation_list=operations()
 
 start=1
 end=10
-calc=0
-result=0
 calc_list=[]
 
 for i in range(start,end):
