@@ -3,9 +3,7 @@ import re
 def split(word):
     return [char for char in word]
 
-# # print(count)
 def doTheMath(operator, num1, num2, num3, num4,calc_list):
-    # print(split(operator))
     op1,op2,op3=split(operator)
     math=(str(num1)+op1+str(num2)+op2+str(num3)+op3+str(num4))
     result=eval(math) #do the math inside of the string.
@@ -56,8 +54,6 @@ for i in range(start,end):
                 for item in operation_list:
                     calc_list=doTheMath(item,i,j,k,l,calc_list)
 
-# print(calc_list)
-# print(len(calc_list))
 
 board_list=create_board()
 board_list=list(dict.fromkeys(board_list)) #remove duplicates
