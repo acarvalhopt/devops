@@ -26,7 +26,7 @@ def getOperations():
     operation_list = list(dict.fromkeys(operation_list)) #remove duplicates
     return operation_list
 
-def create_board(calc_list):
+def createBoard(calc_list):
     board_list = []
     
     for op in calc_list:
@@ -38,7 +38,7 @@ def create_board(calc_list):
     
     return board_list
 
-def generate_combinations(start,end):
+def generateCombinations(start,end):
     operation_list=getOperations()
     calc_list=[]
     for i in range(start,end):
@@ -53,10 +53,10 @@ def generate_combinations(start,end):
 if __name__ == "__main__":
     
     calc_list=[]
-    calc_list=generate_combinations(1,10)
+    calc_list=generateCombinations(1,10)
     # print("[DEBUG] - calc_list with result 24:")
     # print('\n'.join(map(str, calc_list)))
-    board_list=create_board(calc_list)
+    board_list=createBoard(calc_list)
     print("[DEBUG] - board_list:")
     print('\n'.join(map(str, board_list)))
     board_list=list(dict.fromkeys(board_list)) #remove duplicates
