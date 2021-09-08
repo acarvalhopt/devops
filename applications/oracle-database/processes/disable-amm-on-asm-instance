@@ -1,0 +1,23 @@
+# Doc ID 1625886.1
+
+su - oracle
+. oraenv
++ASM1 or +ASM2
+
+sqlplus / as sysasm
+alter system reset memory_target;
+alter system reset memory_max_target;
+alter system set memory_max_target=4096m scope=spfile;
+alter system set memory_target=1536m scope=spfile;
+
+# Restart db
+su - root
+. oraenv
++ASM1
+crsctl stop cluster -all
+# Check the resources state
+crsctl status resource -t 
+crsctl start cluster -all
+
+# Check the resources state
+crsctl status resource -t  
