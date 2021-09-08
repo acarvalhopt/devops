@@ -1,11 +1,11 @@
-# Stop database
+#### Stop database
 srvctl stop database -d <db>
-# enter as sysdba
+#### enter as sysdba
 sqlplus / as sysdba
 startup mount;
 alter database archivelog;
-# to disable:
-# alter database noarchivelog
+#### to disable:
+#### alter database noarchivelog
 
 shutdown immediate; (wait)
 
