@@ -1,2 +1,2 @@
 # devops
-Personal projects in DevOps.
+Personal notes and projects in DevOps.
