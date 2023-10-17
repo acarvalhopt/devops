@@ -1,0 +1,53 @@
+# Label helps to group similar types of object in kubernetes & it will help to findout specific types of object very easily from kubernetes.
+# Label 
+# - key=value
+# - dept=accounts
+
+# kubectl get pods -o wide --show-labels 
+# kubectl get pods  --show-labels 
+
+# add a label
+# kubectl label pod mypod dept=hr
+
+# overwrite label
+# kubectl label pod mypod --overwrite  dept=accounts
+
+# add label
+# kubectl label pod mypod fruits=apple
+
+# remove label
+# kubectl label pod mypod fruits-
+
+# create a pod manually
+#kubectl run pod200 --image=k8s.gcr.io/echoserver:1.4 --image-pull-policy=IfNotPresent --labels  game=cricket
+
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mypod
+ labels:
+  game: football
+spec:
+  containers:
+  - name: mycont
+    image: k8s.gcr.io/echoserver:1.4
+    imagePullPolicy: IfNotPresent
+
+# It will help us to findout our required resources per the label
+# Types of selector:
+# - Equiality based/ equity based selector -> works on single key with single value
+# kubectl get pods --selector game=cricket
+# or
+# kubectl get pods -l game=cricket
+
+# to see all the pods other than value cricket
+# kubectl get pods --selector game!=cricket
+# or
+# kubectl get pods -l game!=cricket                                    
+ 
+#set based selector -> works on single key with multiple value
+# in -> equalto
+# kubectl get pods --selector 'game in (football,cricket)'
+
+# notin -> not equal to
+# kubectl get pods --selector 'game notin (football,cricket)'

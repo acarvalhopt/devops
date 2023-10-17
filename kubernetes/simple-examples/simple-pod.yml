@@ -1,0 +1,13 @@
+# kubectl explain pod 
+# kubectl create -f simple-pod.yml 
+# kubectl get pods
+# kubectl delete -f simple-pod.yml 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-pod
+spec:
+  containers:
+  - name: mypod
+    image: k8s.gcr.io/echoserver:1.4

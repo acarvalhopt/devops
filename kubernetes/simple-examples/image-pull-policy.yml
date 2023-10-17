@@ -1,0 +1,20 @@
+# 3 Types:
+# - Always (Default)
+# - IfNotPresent
+# - Never
+#
+# kubectl create -f image-pull-policy.yml 
+# kubectl get pods
+# kubectl delete -f image-pull-policy.yml
+# manually
+# kubectl run mypod --image=k8s.gcr.io/echoserver:1.4 --image-pull-policy=IfNotPresent
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: image-pull-policy
+spec:
+  containers:
+  - name: mypod
+    image: k8s.gcr.io/echoserver:1.4
+    imagePullPolicy: IfNotPresent
