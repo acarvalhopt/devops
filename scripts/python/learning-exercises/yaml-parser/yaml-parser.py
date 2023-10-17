@@ -11,7 +11,7 @@ def printDuplicateds(list_of_paths):
         else:
             print("Duplicated: " + path)
 
-with open("/Users/andrecarvalho/Documents/gowithflow/git/kong/files/routes/mobime.yml", 'r') as stream:
+with open("/test.yml", 'r') as stream:
 # with open("test.yml", 'r') as stream:
     try:
         # print(yaml.safe_load(stream))
