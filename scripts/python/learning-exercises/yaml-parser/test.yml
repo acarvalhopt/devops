@@ -1,0 +1,112 @@
+_format_version: '1.1'
+
+certificates:
+- created_at: 1582206198
+  cert: | 
+    -----BEGIN CERTIFICATE-----
+  id: 2737a9b8-0b1b-4330-ae5a-3d8b2a4e1a60
+  tags:
+  - test.dev
+  key: |
+    -----BEGIN PRIVATE KEY-----
+- created_at: 1582206209
+  cert: |-
+    -----BEGIN CERTIFICATE-----
+  id: 746ec95c-0603-4077-a78b-8bc937900c52
+  tags:
+  - test.pt
+  key: |
+    -----BEGIN PRIVATE KEY-----
+- created_at: 1582206201
+  cert: |-
+    -----BEGIN CERTIFICATE-----
+  id: d92bfff1-58a7-48f4-92b8-5d622ee07458
+  tags:
+  - test.io
+  key: |-
+    -----BEGIN RSA PRIVATE KEY-----
+
+plugins:
+- name: prometheus
+- name: zipkin
+  service: gateway-test
+  config: 
+    http_endpoint: http://zipkin-00_zipkin:9411/api/v2/spans
+    sample_ratio: 1
+    include_credential: true
+
+upstreams:
+- name: vms-https
+  slots: 100
+  tags: null
+  targets:
+  - target: 10.10.10.1:443
+    weight: 100
+  - target: 10.10.10.2:443
+    weight: 50
+
+services:
+- host: sonarqube
+  connect_timeout: 60000
+  protocol: http
+  name: sonarqube
+  read_timeout: 6000000
+  port: 9000
+  retries: 5
+  write_timeout: 6000000
+
+snis:
+- name: grafana.test.io
+  certificate: d92bfff1-58a7-48f4-92b8-5d622ee07458
+
+routes:
+- protocols:
+  - https
+  service: container_01
+  preserve_host: true
+  regex_priority: 0
+  strip_path: false
+  paths:
+  - /context/test
+  https_redirect_status_code: 301
+  methods:
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - OPTIONS
+  - PATCH
+  
+- protocols:
+  - https
+  service: container_02
+  preserve_host: true
+  regex_priority: 0
+  strip_path: false
+  paths:
+  - /test
+  https_redirect_status_code: 301
+  methods:
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - OPTIONS
+  - PATCH
+
+- protocols:
+  - https
+  service: container_01
+  preserve_host: true
+  regex_priority: 0
+  strip_path: false
+  paths:
+  - /context/test
+  https_redirect_status_code: 301
+  methods:
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - OPTIONS
+  - PATCH
