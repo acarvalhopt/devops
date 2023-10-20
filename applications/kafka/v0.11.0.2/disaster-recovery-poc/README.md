@@ -29,4 +29,4 @@
 
 ##### produce some messages and they should appear on instance-developer-kafka2.
 
-![MirrorMakerTest](<Screenshot 2023-10-20 at 16.10.21.png>)
+![MirrorMakerTest](<mirror-maker-test.png>)
