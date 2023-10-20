@@ -1,4 +1,4 @@
-# Disaster Recovery PoC for Kafka 0.11.0.2
+# Mirror Maker PoC for Kafka 0.11.0.2 for Disaster Recovery Purposes
 
 # Configuration
 - create 2 machines in different regions
@@ -28,3 +28,5 @@
 ```/opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic topic1```
 
 ##### produce some messages and they should appear on instance-developer-kafka2.
+
+![MirrorMakerTest](<Screenshot 2023-10-20 at 16.10.21.png>)
