@@ -11,20 +11,20 @@
 ## In the instance-developer-kafka2
 
 #### create a new topic
-/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic topic1
+```/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic topic1```
 
 #### start the mirror maker on a new console terminal
-/opt/kafka/bin/kafka-mirror-maker.sh --consumer.config /opt/kafka/config/consumer.properties --num.streams 1 --producer.config /opt/kafka/config/producer.properties --whitelist topic1 
+```/opt/kafka/bin/kafka-mirror-maker.sh --consumer.config /opt/kafka/config/consumer.properties --num.streams 1 --producer.config /opt/kafka/config/producer.properties --whitelist topic1 ```
 
 #### start the consumer on a new console terminal
-/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic topic1 --from-beginning
+```/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic topic1 --from-beginning```
 
 ## In the instance-developer-kafka1 
 
 #### create a new topic
-/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic topic1
+```/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic topic1```
 
 #### start the producer
-/opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic topic1
+```/opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic topic1```
 
 ##### produce some messages and they should appear on instance-developer-kafka2.
