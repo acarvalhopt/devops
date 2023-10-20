@@ -1,3 +1,5 @@
+# Disaster Recovery PoC for Kafka 0.11.0.2
+
 # Configuration
 - create 2 machines in different regions
 - the test was done with one machine in Frankfurt and another in London.
